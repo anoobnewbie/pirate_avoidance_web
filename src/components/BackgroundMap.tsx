@@ -28,7 +28,7 @@ function BackgroundMap() {
     rotateControl: false,
     fullscreenControl: false,
     zoomControlOptions: {
-      position: window.google?.maps?.ControlPosition?.RIGHT_CENTER,
+      position: window.google?.maps?.ControlPosition?.LEFT_CENTER,
     },
   };
 
