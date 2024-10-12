@@ -19,9 +19,14 @@ function BackgroundMap() {
     lng: 103.8198, // Longitude
   };
 
+  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  
+  console.log("the key is");
+  console.log(googleMapsApiKey);
+
   return (
     // LoadScript component loads the Google Maps JavaScript API
-    <LoadScript googleMapsApiKey="API_KEY">
+    <LoadScript googleMapsApiKey={googleMapsApiKey}>
       {/* GoogleMap component to display the map */}
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
