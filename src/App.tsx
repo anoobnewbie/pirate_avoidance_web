@@ -1,6 +1,6 @@
 import "./App.css";
 import BackgroundMap from "./components/BackgroundMap";
-import ControlPanel from "./components/ControlPanel";
+import ControlPanel from "./components/ControlPanelComponents/ControlPanel";
 import TitleLogo from "./components/TitleLogo";
 
 function App() {

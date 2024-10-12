@@ -4,7 +4,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 
 import RouteCombobox from "./RouteCombobox";
-import CargoCombobox from "./ControlPanelComponents/CargoCombobox";
+import CargoCombobox from "./CargoCombobox";
 
 function ControlPanel() {
   const [valueCargo, setValueCargo] = React.useState("");
