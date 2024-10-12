@@ -1,7 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { GoogleMap, LoadScript, MarkerF, PolylineF } from "@react-google-maps/api";
 
-function BackgroundMap() {
+interface BackgroundMapProps {
+  route: { lat: number; lng: number }[];
+  startPoint: { lat: number; lng: number } | null;
+  endPoint: { lat: number; lng: number } | null;
+}
+
+function BackgroundMap({ route, startPoint, endPoint }: BackgroundMapProps) {
   const mapContainerStyle = {
     height: "100vh",
     width: "100vw",
@@ -25,11 +31,6 @@ function BackgroundMap() {
   };
 
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  
-  const seaRouteData = [[103.6,1.1],[102,2],[100.6,3.2],[97,7],[95.1751,10.7066],[93.3,14.4],[92,20],[91.6295,21.7994]];
-
-  const seaRoute = seaRouteData.map(([lng, lat]) => ({ lat, lng }));
-
 
   const polylineOptions = {
     strokeColor: '#FF0000',
@@ -39,6 +40,8 @@ function BackgroundMap() {
     zIndex: 1,
   };
 
+
+
   return (
     <LoadScript googleMapsApiKey={googleMapsApiKey}>
       <GoogleMap
@@ -47,18 +50,24 @@ function BackgroundMap() {
         center={center}
         zoom={9}
       >
-        <PolylineF
-          path={seaRoute}
-          options={polylineOptions}
-        />
-        <MarkerF
-            position={seaRoute[0]}
-            label="start"
+        {route.length > 0 && (
+          <PolylineF
+            path={route}
+            options={polylineOptions}
           />
-        <MarkerF
-            position={seaRoute[seaRoute.length - 1]}
-            label="end"
+        )}
+        {startPoint && (
+          <MarkerF
+            position={startPoint}
+            label="Start"
           />
+        )}
+        {endPoint && (
+          <MarkerF
+            position={endPoint}
+            label="End"
+          />
+        )}
       </GoogleMap>
     </LoadScript>
   );

@@ -6,7 +6,15 @@ import { Button } from "@/components/ui/button";
 import { StartPortCombobox, EndPortCombobox } from "./PortCombobox";
 import CargoCombobox from "./CargoCombobox";
 
-function ControlPanel() {
+interface ControlPanelProps {
+  onRouteUpdate: (
+    route: { lat: number; lng: number }[],
+    start: { lat: number; lng: number },
+    end: { lat: number; lng: number }
+  ) => void;
+}
+
+function ControlPanel({ onRouteUpdate }: ControlPanelProps) {
   const [valueCargo, setValueCargo] = React.useState("");
   const [valueStartPort, setValueStartPort] = React.useState("");
   const [valueEndPort, setValueEndPort] = React.useState("");
@@ -62,18 +70,25 @@ function ControlPanel() {
         const responseData = await response.json();
         console.log("API Response Data:", responseData);
 
-        // Append start and end coordinates to the route array
-        const updatedRoute = [
-          [startCoordinates.lat, startCoordinates.lon],
-          ...responseData.route,
-          [endCoordinates.lat, endCoordinates.lon],
-        ];
+        // Convert the route to the format expected by Google Maps
+        const updatedRoute = responseData.route.map(([lon, lat]: [number, number]): { lat: number; lng: number } => {
+          const latTyped: number = lat;
+          const lngTyped: number = lon;
+          return { lat: latTyped, lng: lngTyped };
+        });
+
+        // Call the onRouteUpdate function with the new route and start/end points
+        onRouteUpdate(
+          updatedRoute,
+          { lat: startCoordinates.lat, lng: startCoordinates.lon },
+          { lat: endCoordinates.lat, lng: endCoordinates.lon }
+        );
 
         // Format and print the response data
         const formattedRoute = updatedRoute
           .map(
-            ([lat, lon]: [number, number], index: number) =>
-              `Waypoint ${index + 1}: Latitude ${lat}, Longitude ${lon}`
+            ({ lat, lng }: { lat: number; lng: number }, index:number) =>
+              `Waypoint ${index + 1}: Latitude ${lat}, Longitude ${lng}`
           )
           .join("\n");
 
@@ -107,16 +122,9 @@ function ControlPanel() {
         boxShadow: "inset 0 0 20px rgba(255, 255, 255, 0.6)",
       }}
     >
-      {/* Cargo Type Combobox */}
       <CargoCombobox value={valueCargo} setValue={setValueCargo} />
-
-      {/* Start Port Combobox */}
       <StartPortCombobox value={valueStartPort} setValue={setValueStartPort} />
-
-      {/* End Port Combobox */}
       <EndPortCombobox value={valueEndPort} setValue={setValueEndPort} />
-
-      {/* Update Predictions Button */}
       <Button className="w-full mt-4" onClick={handleUpdatePredictions}>
         Update Predictions
       </Button>
