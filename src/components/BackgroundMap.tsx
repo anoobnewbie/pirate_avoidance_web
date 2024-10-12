@@ -1,25 +1,17 @@
-// Step 1: Install Google Maps library
-// In your terminal, run the following command to add the required library
-// npm install @react-google-maps/api
-
-// Step 2: Update your BackgroundMap component to integrate Google Maps
-import { GoogleMap, LoadScript } from "@react-google-maps/api";
+import React from "react";
+import { GoogleMap, LoadScript, MarkerF, PolylineF } from "@react-google-maps/api";
 
 function BackgroundMap() {
-  // Style for the map container to take up the full screen
   const mapContainerStyle = {
     height: "100vh",
     width: "100vw",
   };
 
-  // Center of the map (Singapore coordinates)
   const center = {
-    lat: 1.3521, // Latitude
-    lng: 103.8198, // Longitude
+    lat: 1.2555,
+    lng: 104.0089,
   };
 
-   // Custom map options to move controls
-     // Define map options to reposition controls
   const mapOptions = {
     zoomControl: true,
     mapTypeControl: false,
@@ -32,34 +24,44 @@ function BackgroundMap() {
     },
   };
 
-
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   
+  const seaRouteData = [[103.6,1.1],[102,2],[100.6,3.2],[97,7],[95.1751,10.7066],[93.3,14.4],[92,20],[91.6295,21.7994]];
 
+  const seaRoute = seaRouteData.map(([lng, lat]) => ({ lat, lng }));
+
+
+  const polylineOptions = {
+    strokeColor: '#FF0000',
+    strokeOpacity: 1.0,
+    strokeWeight: 3,
+    geodesic: true,
+    zIndex: 1,
+  };
 
   return (
-    // LoadScript component loads the Google Maps JavaScript API
     <LoadScript googleMapsApiKey={googleMapsApiKey}>
-      {/* GoogleMap component to display the map */}
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         options={mapOptions}
         center={center}
-        zoom={10} // Zoom level for the map
-      />
+        zoom={9}
+      >
+        <PolylineF
+          path={seaRoute}
+          options={polylineOptions}
+        />
+        <MarkerF
+            position={seaRoute[0]}
+            label="start"
+          />
+        <MarkerF
+            position={seaRoute[seaRoute.length - 1]}
+            label="end"
+          />
+      </GoogleMap>
     </LoadScript>
   );
 }
 
 export default BackgroundMap;
-
-// Step 3: Obtain a Google Maps API Key
-// - Visit https://developers.google.com/maps/documentation/javascript/get-api-key
-// - Generate an API key and replace "YOUR_GOOGLE_MAPS_API_KEY" with your key
-
-// Step 4: Enable the relevant APIs
-// - Ensure you enable the Google Maps JavaScript API from the Google Cloud Console
-
-// Step 5: Run your application
-// - You should see a map centered on Singapore
-// - You can adjust the coordinates in the "center" object to change the map's location
