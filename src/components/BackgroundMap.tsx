@@ -3,7 +3,6 @@
 // npm install @react-google-maps/api
 
 // Step 2: Update your BackgroundMap component to integrate Google Maps
-import React from "react";
 import { GoogleMap, LoadScript } from "@react-google-maps/api";
 
 function BackgroundMap() {
@@ -19,10 +18,24 @@ function BackgroundMap() {
     lng: 103.8198, // Longitude
   };
 
+   // Custom map options to move controls
+     // Define map options to reposition controls
+  const mapOptions = {
+    zoomControl: true,
+    mapTypeControl: false,
+    scaleControl: false,
+    streetViewControl: false,
+    rotateControl: false,
+    fullscreenControl: false,
+    zoomControlOptions: {
+      position: window.google?.maps?.ControlPosition?.RIGHT_CENTER,
+    },
+  };
+
+
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   
-  console.log("the key is");
-  console.log(googleMapsApiKey);
+
 
   return (
     // LoadScript component loads the Google Maps JavaScript API
@@ -30,6 +43,7 @@ function BackgroundMap() {
       {/* GoogleMap component to display the map */}
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
+        options={mapOptions}
         center={center}
         zoom={10} // Zoom level for the map
       />
