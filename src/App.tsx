@@ -1,10 +1,15 @@
 import "./App.css";
+import BackgroundMap from "./components/BackgroundMap";
+import ControlPanel from "./components/ControlPanel";
+import TitleLogo from "./components/TitleLogo";
 
 function App() {
   return (
-    <>
-      <h1 className="text-3xl font-mono font-semibold">PirateBros</h1>
-    </>
+    <div className="relative h-screen w-screen">
+      <BackgroundMap />
+      <ControlPanel />
+      <TitleLogo />
+    </div>
   );
 }
 
