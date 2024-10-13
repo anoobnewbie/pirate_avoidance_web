@@ -8,13 +8,13 @@ import {
 import mapStyles from "./mapStyles";
 import polylineOptions from "./polylineOptions";
 import { routes } from "./routes";
-import portCoordinates from "./PortCoordinates"; // Import portCoordinates
+import portCoordinates from "./PortCoordinates";
 
 interface BackgroundMapProps {
   attackPort: string;
 }
 
-function BackgroundMap({ attackPort }: BackgroundMapProps) {
+const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
   const mapContainerStyle = {
     height: "100vh",
     width: "100vw",
@@ -24,13 +24,16 @@ function BackgroundMap({ attackPort }: BackgroundMapProps) {
   const [currentPositions, setCurrentPositions] = useState<{
     [key: string]: number;
   }>({});
+  const [trafficData, setTrafficData] = useState<{
+    [key: string]: number;
+  } | null>(null);
 
   const center = {
     lat: 1.2555,
     lng: 104.0089,
   };
 
-  const mapOptions = {
+  const mapOptions: google.maps.MapOptions = {
     zoomControl: true,
     mapTypeControl: false,
     scaleControl: false,
@@ -44,6 +47,51 @@ function BackgroundMap({ attackPort }: BackgroundMapProps) {
   };
 
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+  useEffect(() => {
+    const fetchTrafficData = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8050/calculate_traffic_percentage",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              port_name: attackPort, // Update to use the selected attack port
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        setTrafficData(data);
+      } catch (error) {
+        console.error("Error fetching traffic data:", error);
+      }
+    };
+
+    fetchTrafficData();
+  }, [attackPort]);
+
+  const getTrafficColor = (percentage: number) => {
+    if (percentage >= 40) {
+      // Dark red
+      return "rgb(139, 0, 0)";
+    } else if (percentage >= 10 && percentage < 40) {
+      // Shades of yellow that get closer to red as the percentage increases
+      const redIntensity = Math.floor(255 * ((percentage - 10) / 30));
+      return `rgb(${redIntensity}, 255, 0)`;
+    } else {
+      // Green for 0-10%
+      const greenIntensity = Math.floor(255 * (percentage / 10));
+      return `rgb(0, 255, ${greenIntensity})`;
+    }
+  };
 
   return (
     <LoadScript googleMapsApiKey={googleMapsApiKey}>
@@ -81,7 +129,7 @@ function BackgroundMap({ attackPort }: BackgroundMapProps) {
           </React.Fragment>
         ))}
 
-        {/* Render markers for port coordinates */}
+        {/* Render markers for port coordinates with traffic percentages */}
         {Object.entries(portCoordinates).map(
           ([portName, coordinates], index) => (
             <MarkerF
@@ -99,18 +147,46 @@ function BackgroundMap({ attackPort }: BackgroundMapProps) {
                 strokeWeight: 2,
               }}
               label={{
-                text: portName,
-                fontSize: "16px", // Larger font size
+                text: `${portName}${
+                  trafficData && trafficData[portName] !== undefined
+                    ? `: ${trafficData[portName].toFixed(2)}%`
+                    : ""
+                }`,
+                fontSize: "14px", // Larger font size
                 fontWeight: "bold",
-                color: "#FFFFFF", // White text for dark mode
+                color:
+                  portName === attackPort
+                    ? "#FF0000" // Completely red for the affected city
+                    : trafficData && trafficData[portName] !== undefined
+                    ? getTrafficColor(trafficData[portName])
+                    : "#FFFFFF", // Adjust text color based on traffic percentage
                 className: "map-label",
               }}
             />
           )
         )}
+
+        {/* Render unrouted traffic label at the bottom left of the screen */}
+        {trafficData && trafficData["Unrouted Traffic"] !== undefined && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: "20px",
+              left: "20px",
+              backgroundColor: "rgba(255, 165, 0, 0.8)",
+              padding: "10px",
+              borderRadius: "5px",
+              color: "#FFFFFF",
+              fontWeight: "bold",
+              fontSize: "14px",
+            }}
+          >
+            Unrouted Traffic: {trafficData["Unrouted Traffic"].toFixed(2)}%
+          </div>
+        )}
       </GoogleMap>
     </LoadScript>
   );
-}
+};
 
 export default BackgroundMap;
