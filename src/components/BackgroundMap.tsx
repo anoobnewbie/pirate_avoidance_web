@@ -49,7 +49,7 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
         console.log(`Fetching traffic data for attack port: ${attackPort}`);
 
         const response = await fetch(
-          "http://localhost:8050/calculate_traffic_percentage",
+          "http://47.129.155.186:8050/calculate_traffic_percentage",
           {
             method: "POST",
             headers: {
