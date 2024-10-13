@@ -21,10 +21,6 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
   };
 
   const mapRef = useRef<google.maps.Map | null>(null);
-  const [currentPositions, setCurrentPositions] = useState<{
-    [key: string]: number;
-  }>({});
-  setCurrentPositions({});
 
   const [trafficData, setTrafficData] = useState<{
     [key: string]: number | string;
@@ -140,27 +136,12 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
       >
         
         {/* Render polylines for routes */}
-        {Object.entries(routes).map(([routeName, route], index) => (
+        {Object.entries(routes).map(([, route], index) => (
           <React.Fragment key={index}>
             <PolylineF
               path={route.map(([lng, lat]) => ({ lat, lng }))}
               options={polylineOptions}
             />
-            {currentPositions[routeName] != null && (
-              <MarkerF
-                position={{
-                  lat: route[currentPositions[routeName]][1],
-                  lng: route[currentPositions[routeName]][0],
-                }}
-                icon={{
-                  path: google.maps.SymbolPath.CIRCLE,
-                  scale: 2,
-                  fillColor: "#ADD8E6",
-                  fillOpacity: 1,
-                  strokeWeight: 0,
-                }}
-              />
-            )}
           </React.Fragment>
         ))}
 
