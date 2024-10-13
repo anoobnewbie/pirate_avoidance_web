@@ -24,8 +24,9 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
   const [currentPositions, setCurrentPositions] = useState<{
     [key: string]: number;
   }>({});
+  
   const [trafficData, setTrafficData] = useState<{
-    [key: string]: number;
+    [key: string]: number | string;
   } | null>(null);
 
   const center = {
@@ -51,6 +52,8 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
   useEffect(() => {
     const fetchTrafficData = async () => {
       try {
+        console.log(`Fetching traffic data for attack port: ${attackPort}`);
+
         const response = await fetch(
           "http://localhost:8050/calculate_traffic_percentage",
           {
@@ -69,6 +72,7 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
         }
 
         const data = await response.json();
+        console.log("Received traffic data from backend:", data);
         setTrafficData(data);
       } catch (error) {
         console.error("Error fetching traffic data:", error);
@@ -78,18 +82,21 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
     fetchTrafficData();
   }, [attackPort]);
 
+  useEffect(() => {
+    if (trafficData) {
+      console.log("Updated traffic data state:", trafficData);
+    }
+  }, [trafficData]);
+
   const getTrafficColor = (percentage: number) => {
     if (percentage >= 40) {
-      // Dark red
-      return "rgb(139, 0, 0)";
+      return "rgb(139, 0, 0)"; // Dark red
     } else if (percentage >= 10 && percentage < 40) {
-      // Shades of yellow that get closer to red as the percentage increases
       const redIntensity = Math.floor(255 * ((percentage - 10) / 30));
-      return `rgb(${redIntensity}, 255, 0)`;
+      return `rgb(${redIntensity}, 255, 0)`; // Shades of yellow/red
     } else {
-      // Green for 0-10%
       const greenIntensity = Math.floor(255 * (percentage / 10));
-      return `rgb(0, 255, ${greenIntensity})`;
+      return `rgb(0, 255, ${greenIntensity})`; // Green for low traffic
     }
   };
 
@@ -149,7 +156,7 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
               label={{
                 text: `${portName}${
                   trafficData && trafficData[portName] !== undefined
-                    ? `: ${trafficData[portName].toFixed(2)}%`
+                    ? `: ${typeof trafficData[portName] === "number" ? (trafficData[portName] as number).toFixed(2) : trafficData[portName]}%`
                     : ""
                 }`,
                 fontSize: "14px", // Larger font size
@@ -158,7 +165,7 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
                   portName === attackPort
                     ? "#FF0000" // Completely red for the affected city
                     : trafficData && trafficData[portName] !== undefined
-                    ? getTrafficColor(trafficData[portName])
+                    ? getTrafficColor(trafficData[portName] as number)
                     : "#FFFFFF", // Adjust text color based on traffic percentage
                 className: "map-label",
               }}
@@ -166,7 +173,7 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
           )
         )}
 
-        {/* Render unrouted traffic label at the bottom left of the screen */}
+        {/* Render unrouted traffic, total cost, and total time labels */}
         {trafficData && trafficData["Unrouted Traffic"] !== undefined && (
           <div
             style={{
@@ -181,7 +188,9 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
               fontSize: "14px",
             }}
           >
-            Unrouted Traffic: {trafficData["Unrouted Traffic"].toFixed(2)}%
+            <div>Unrouted Traffic: {typeof trafficData["Unrouted Traffic"] === "number" ? trafficData["Unrouted Traffic"].toFixed(2) : trafficData["Unrouted Traffic"]}%</div>
+            <div>Extra Cost: ${trafficData["Total Cost"]}</div>
+            <div>Extra Time: {trafficData["Total Time"]} hours</div>
           </div>
         )}
       </GoogleMap>
