@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import "./App.css";
 import BackgroundMap from "./components/BackgroundMap";
 import ControlPanel from "./components/ControlPanelComponents/ControlPanel";
@@ -8,17 +8,24 @@ const App = () => {
   const [route, setRoute] = useState([]);
   const [startPoint, setStartPoint] = useState(null);
   const [endPoint, setEndPoint] = useState(null);
+  const [attackPort, setAttackPort] = useState<string>("");
 
-  const handleRouteUpdate = (newRoute:any, start:any, end:any) => {
+  const handleRouteUpdate = (newRoute: any, start: any, end: any) => {
     setRoute(newRoute);
     setStartPoint(start);
     setEndPoint(end);
   };
 
+  const handleAttackPortUpdate = (newAttackPort: string) => {
+    setAttackPort(newAttackPort);
+  };
+
   return (
     <div className="relative h-screen w-screen">
-      <BackgroundMap route={route} startPoint={startPoint} endPoint={endPoint} />
-      <ControlPanel onRouteUpdate={handleRouteUpdate} />
+      <BackgroundMap
+        attackPort={attackPort} // Pass attackPort to BackgroundMap
+      />
+      <ControlPanel onAttackPortUpdate={handleAttackPortUpdate} />
       <TitleLogo />
     </div>
   );

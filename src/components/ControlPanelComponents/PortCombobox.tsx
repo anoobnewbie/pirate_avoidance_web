@@ -18,13 +18,19 @@ import {
 
 // StartPortCombobox Component
 const ports = [
-  "Port of Shanghai",
-  "Port of Singapore",
-  "Port of Los Angeles",
-  "Port of New York",
-  "Port of Kaohsiung",
-  "Port of Rotterdam",
-  "Port of Hamburg",
+  "Singapore",
+  "Port Klang",
+  "Tanjung Priok",
+  "Shanghai",
+  "Shenzhen",
+  "Rotterdam",
+  "Felixstowe",
+  "Los Angeles",
+  "New York",
+  "Santos",
+  "Buenos Aires",
+  "Vancouver",
+  "Savannah",
 ];
 
 interface createPortComboboxProps {
@@ -43,7 +49,7 @@ function PortCombobox({ value, setValue, label }: PortComboboxProps) {
 
   return (
     <div>
-      <h4 className="text-sm font-medium mt-4 mb-1 text-slate-600">{label}</h4>
+      <h4 className="text-sm font-medium mt-0 mb-1 text-slate-600">{label}</h4>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -99,4 +105,8 @@ export function StartPortCombobox(props: createPortComboboxProps) {
 
 export function EndPortCombobox(props: createPortComboboxProps) {
   return <PortCombobox {...props} label="End Port" />;
+}
+
+export function AttackPortCombobox(props: createPortComboboxProps) {
+  return <PortCombobox {...props} label="Select Port" />;
 }

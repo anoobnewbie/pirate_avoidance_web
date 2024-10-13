@@ -1,24 +1,29 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   GoogleMap,
   LoadScript,
-  MarkerF,
   PolylineF,
+  MarkerF,
 } from "@react-google-maps/api";
+import mapStyles from "./mapStyles";
+import polylineOptions from "./polylineOptions";
+import { routes } from "./routes";
+import portCoordinates from "./PortCoordinates"; // Import portCoordinates
 
 interface BackgroundMapProps {
-  route: { lat: number; lng: number }[];
-  startPoint: { lat: number; lng: number } | null;
-  endPoint: { lat: number; lng: number } | null;
+  attackPort: string;
 }
 
-function BackgroundMap({ route, startPoint, endPoint }: BackgroundMapProps) {
+function BackgroundMap({ attackPort }: BackgroundMapProps) {
   const mapContainerStyle = {
     height: "100vh",
     width: "100vw",
   };
 
   const mapRef = useRef<google.maps.Map | null>(null);
+  const [currentPositions, setCurrentPositions] = useState<{
+    [key: string]: number;
+  }>({});
 
   const center = {
     lat: 1.2555,
@@ -35,148 +40,10 @@ function BackgroundMap({ route, startPoint, endPoint }: BackgroundMapProps) {
     zoomControlOptions: {
       position: window.google?.maps?.ControlPosition?.LEFT_CENTER,
     },
-    styles: [
-      {
-        elementType: "geometry",
-        stylers: [
-          {
-            color: "#2f3948",
-          },
-        ],
-      },
-      {
-        elementType: "labels.icon",
-        stylers: [
-          {
-            visibility: "off",
-          },
-        ],
-      },
-      {
-        elementType: "labels.text.fill",
-        stylers: [
-          {
-            color: "#8ec3b9",
-          },
-        ],
-      },
-      {
-        elementType: "labels.text.stroke",
-        stylers: [
-          {
-            color: "#1a3646",
-          },
-        ],
-      },
-      {
-        featureType: "administrative",
-        elementType: "geometry",
-        stylers: [
-          {
-            color: "#4b6878",
-          },
-        ],
-      },
-      {
-        featureType: "administrative.country",
-        elementType: "labels.text.fill",
-        stylers: [
-          {
-            color: "#6b9a76",
-          },
-        ],
-      },
-      {
-        featureType: "administrative.land_parcel",
-        stylers: [
-          {
-            visibility: "off",
-          },
-        ],
-      },
-      {
-        featureType: "administrative.locality",
-        elementType: "labels.text.fill",
-        stylers: [
-          {
-            color: "#c4d4e0",
-          },
-        ],
-      },
-      {
-        featureType: "poi",
-        stylers: [
-          {
-            visibility: "off",
-          },
-        ],
-      },
-      {
-        featureType: "road",
-        stylers: [
-          {
-            visibility: "off",
-          },
-        ],
-      },
-      {
-        featureType: "transit",
-        stylers: [
-          {
-            visibility: "off",
-          },
-        ],
-      },
-      {
-        featureType: "water",
-        elementType: "geometry",
-        stylers: [
-          {
-            color: "#0e1626",
-          },
-        ],
-      },
-      {
-        featureType: "water",
-        elementType: "labels.text.fill",
-        stylers: [
-          {
-            color: "#4e6d70",
-          },
-        ],
-      },
-    ],
+    styles: mapStyles,
   };
 
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-  const polylineOptions = {
-    strokeColor: "#FFFFFF", // Changed to white for the shipping route
-    strokeOpacity: 0.9, // Increased opacity for better contrast
-    strokeWeight: 4, // Adjusted stroke weight for improved aesthetics
-    geodesic: true,
-    icons: [
-      {
-        icon: {
-          path: window.google?.maps?.SymbolPath?.FORWARD_CLOSED_ARROW, // Change to arrow symbol
-          scale: 2.3, // Adjust the size of the arrow
-          strokeColor: "#FFFFFF",
-          fillColor: "#FFFFFF",
-          fillOpacity: 1,
-        },
-        offset: "100%", // Position the first arrow at the end
-        repeat: "100px", // Distance between each arrow
-      },
-    ],
-  };
-
-  useEffect(() => {
-    if (mapRef.current && route.length > 0) {
-      const bounds = new window.google.maps.LatLngBounds();
-      route.forEach((point) => bounds.extend(point));
-      mapRef.current.fitBounds(bounds, 50);
-    }
-  }, [route]);
 
   return (
     <LoadScript googleMapsApiKey={googleMapsApiKey}>
@@ -189,11 +56,58 @@ function BackgroundMap({ route, startPoint, endPoint }: BackgroundMapProps) {
           mapRef.current = map;
         }}
       >
-        {route.length > 0 && (
-          <PolylineF path={route} options={polylineOptions} />
+        {/* Render polylines for routes */}
+        {Object.entries(routes).map(([routeName, route], index) => (
+          <React.Fragment key={index}>
+            <PolylineF
+              path={route.map(([lng, lat]) => ({ lat, lng }))}
+              options={polylineOptions}
+            />
+            {currentPositions[routeName] != null && (
+              <MarkerF
+                position={{
+                  lat: route[currentPositions[routeName]][1],
+                  lng: route[currentPositions[routeName]][0],
+                }}
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 2,
+                  fillColor: "#ADD8E6",
+                  fillOpacity: 1,
+                  strokeWeight: 0,
+                }}
+              />
+            )}
+          </React.Fragment>
+        ))}
+
+        {/* Render markers for port coordinates */}
+        {Object.entries(portCoordinates).map(
+          ([portName, coordinates], index) => (
+            <MarkerF
+              key={index}
+              position={{
+                lat: coordinates.lat,
+                lng: coordinates.lon,
+              }}
+              icon={{
+                path: "M 0,0 L -20,60 L 20,60 Z", // Custom marker shape (triangle banner)
+                scale: 0.3, // Make the marker bigger
+                fillColor: portName === attackPort ? "#FF0000" : "#FFFFFF", // Highlight attackPort in red
+                fillOpacity: 1,
+                strokeColor: portName === attackPort ? "#FF0000" : "#000000", // Change stroke color to red for attackPort
+                strokeWeight: 2,
+              }}
+              label={{
+                text: portName,
+                fontSize: "16px", // Larger font size
+                fontWeight: "bold",
+                color: "#FFFFFF", // White text for dark mode
+                className: "map-label",
+              }}
+            />
+          )
         )}
-        {startPoint && <MarkerF position={startPoint} />}
-        {endPoint && <MarkerF position={endPoint} />}
       </GoogleMap>
     </LoadScript>
   );
