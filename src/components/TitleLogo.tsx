@@ -1,5 +1,4 @@
 // TitleLogo.js
-import React from "react";
 
 function TitleLogo() {
   return (

@@ -24,6 +24,7 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
   const [currentPositions, setCurrentPositions] = useState<{
     [key: string]: number;
   }>({});
+  setCurrentPositions({});
 
   const [trafficData, setTrafficData] = useState<{
     [key: string]: number | string;
