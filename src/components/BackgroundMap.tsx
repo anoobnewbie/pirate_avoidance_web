@@ -24,15 +24,12 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
   const [currentPositions, setCurrentPositions] = useState<{
     [key: string]: number;
   }>({});
-  
+
   const [trafficData, setTrafficData] = useState<{
     [key: string]: number | string;
   } | null>(null);
 
-  const center = {
-    lat: 1.2555,
-    lng: 104.0089,
-  };
+  const [center, setCenter] = useState({ lat: 1.2555, lng: 104.0089 });
 
   const mapOptions: google.maps.MapOptions = {
     zoomControl: true,
@@ -74,6 +71,33 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
         const data = await response.json();
         console.log("Received traffic data from backend:", data);
         setTrafficData(data);
+
+        // Smooth transition to the new center
+  if (mapRef.current && attackPort) {
+    const newCenter = { 
+      lat: portCoordinates[attackPort].lat, 
+      lng: portCoordinates[attackPort].lon 
+    };
+    setCenter(newCenter);
+
+    mapRef.current.panTo(newCenter);
+
+    // Smooth zoom effect
+    const currentZoom = 12;
+    const targetZoom = 10;
+    const steps = 10;
+    const zoomStep = (targetZoom - currentZoom) / steps;
+
+    let step = 0;
+    const zoomInterval = setInterval(() => {
+      if (step < steps && currentZoom < targetZoom) {
+        mapRef.current?.setZoom((currentZoom - zoomStep * step));
+        step++;
+      } else {
+        clearInterval(zoomInterval);
+      }
+    }, 50);
+  }
       } catch (error) {
         console.error("Error fetching traffic data:", error);
       }
@@ -100,6 +124,8 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
     }
   };
 
+
+
   return (
     <LoadScript googleMapsApiKey={googleMapsApiKey}>
       <GoogleMap
@@ -111,6 +137,7 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
           mapRef.current = map;
         }}
       >
+        
         {/* Render polylines for routes */}
         {Object.entries(routes).map(([routeName, route], index) => (
           <React.Fragment key={index}>
