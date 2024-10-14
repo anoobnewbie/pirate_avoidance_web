@@ -48,21 +48,21 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
       try {
         console.log(`Fetching traffic data for attack port: ${attackPort}`);
 
-        const response = await fetch(
-          "https://calculate-traffic-percentage-xg6vtevnga-uc.a.run.app",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              port_name: attackPort, // Update to use the selected attack port
-            }),
-          }
-        );
+        const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
+        const API_URL = "https://calculate-traffic-percentage-xg6vtevnga-uc.a.run.app";
+
+        const response = await fetch(CORS_PROXY + API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            port_name: attackPort,
+          }),
+        });
 
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
