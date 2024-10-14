@@ -48,10 +48,7 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({ attackPort }) => {
       try {
         console.log(`Fetching traffic data for attack port: ${attackPort}`);
 
-        const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
-        const API_URL = "https://calculate-traffic-percentage-xg6vtevnga-uc.a.run.app";
-
-        const response = await fetch(CORS_PROXY + API_URL, {
+        const response = await fetch("/api", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
