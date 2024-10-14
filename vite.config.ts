@@ -9,6 +9,7 @@ export default defineConfig({
       '/api': {
         target: 'https://calculate-traffic-percentage-xg6vtevnga-uc.a.run.app',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       }
     }
   },
